@@ -26,7 +26,8 @@
                                      (:file "statement"
                                             :depends-on ("ffi"
                                                          "errors"
-                                                         "packages"))
+                                                         "packages"
+                                                         "connection"))
                                      (:file "reader"
                                             :depends-on ("ffi"
                                                          "errors"
