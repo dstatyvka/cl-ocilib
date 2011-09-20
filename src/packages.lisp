@@ -16,5 +16,7 @@
            #:execute-scalar
            #:initialize
            #:commit
-           #:execute-non-query))
+           #:execute-non-query
+           #:with-prepared-statement
+           #:with-bound-vars))
 

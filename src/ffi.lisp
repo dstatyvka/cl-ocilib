@@ -69,6 +69,12 @@
   (statement statement)
   (sql win32:wide-string))
 
+(defcfun (#+ocilib32 "_OCI_Prepare@8"
+                     #-ocilib32 "OCI_Prepare" oci-prepare)
+    bool
+  (statement statement)
+  (sql win32:wide-string))
+
 (defcfun (#+ocilib32 "_OCI_Parse@8"
                      #-ocilib32 "OCI_Parse" oci-parse)
     bool
@@ -184,6 +190,70 @@
                      #-ocilib32 "OCI_Rollback" oci-rollback)
     bool
   (connection connection))
+
+(defcfun (#+ocilib32 "_OCI_BindInt@12"
+                     #-ocilib32 "OCI_BindInt" oci-bind-int)
+    bool
+  (statement statement)
+  (name win32:wide-string)
+  (data :pointer))
+
+(defcfun (#+ocilib32 "_OCI_BindArrayOfInts@16"
+                     #-ocilib32 "OCI_BindArrayOfInts" oci-bind-array-of-ints)
+    bool
+  (statement statement)
+  (name win32:wide-string)
+  (data :pointer)
+  (count :uint))
+
+(defcfun (#+ocilib32 "_OCI_BindUnsignedInt@12"
+                     #-ocilib32 "OCI_BindUnsignedInt" oci-bind-unsigned-int)
+    bool
+  (statement statement)
+  (name win32:wide-string)
+  (data :pointer))
+
+(defcfun (#+ocilib32 "_OCI_BindArrayOfUnsignedInts@16"
+                     #-ocilib32 "OCI_BindArrayOfUnsignedInts" 
+                     oci-bind-array-of-unsigned-ints)
+    bool
+  (statement statement)
+  (name win32:wide-string)
+  (data :pointer)
+  (count :uint))
+
+(defcfun (#+ocilib32 "_OCI_BindBigInt@12"
+                     #-ocilib32 "OCI_BindBigInt" oci-bind-big-int)
+    bool
+  (statement statement)
+  (name win32:wide-string)
+  (data :pointer))
+
+(defcfun (#+ocilib32 "_OCI_BindArrayOfBigInts@16"
+                     #-ocilib32 "OCI_BindArrayOfBigInts" 
+                     oci-bind-array-of-big-ints)
+    bool
+  (statement statement)
+  (name win32:wide-string)
+  (data :pointer)
+  (count :uint))
+
+(defcfun (#+ocilib32 "_OCI_BindString@16"
+                     #-ocilib32 "OCI_BindString" oci-bind-string)
+    bool
+  (statement statement)
+  (name win32:wide-string)
+  (data :pointer)
+  (len :uint))
+
+(defcfun (#+ocilib32 "_OCI_BindArrayOfStrings@20"
+                     #-ocilib32 "OCI_BindArrayOfStrings" oci-bind-array-of-strings)
+    bool
+  (statement statement)
+  (name win32:wide-string)
+  (data :pointer)
+  (len :uint)
+  (count :uint))
 
 (defctype oci-error :pointer)
 
