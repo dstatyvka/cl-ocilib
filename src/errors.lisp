@@ -4,7 +4,8 @@
   (let ((oci-error (oci-get-last-error)))
     (if (null-pointer-p oci-error)
         (error "Unknown OCI error")
-        (error "OCI error: ~a" (oci-error-get-string oci-error)))))
+        (error "OCI error: ~a"
+               (oci-error-get-string oci-error)))))
 
 (defun check-errors (last-result)
   (cond

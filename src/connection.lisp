@@ -4,7 +4,7 @@
 
 (defun initialize (&optional lib-path)
   (check-errors 
-   (oci-initialize (null-pointer) lib-path :oci-env-default)))
+   (oci-initialize (null-pointer) lib-path :oci-env-context)))
 
 (defun cleanup ()
   (check-errors 
