@@ -255,6 +255,58 @@
   (len :uint)
   (count :uint))
 
+(defctype oci-bind :pointer)
+
+(defcfun (#+ocilib32 "_OCI_GetBind@8"
+                     #-ocilib32 "OCI_GetBind" oci-get-bind)
+    oci-bind
+  (statement statement)
+  (index :uint))
+
+(defcfun (#+ocilib32 "_OCI_GetBind2@8"
+                     #-ocilib32 "OCI_GetBind2" oci-get-bind2)
+    oci-bind
+  (statement statement)
+  (name win32:wide-string))
+
+
+(defcenum (bind-mode :uint)
+  (:oci-bind-by-pos 0)
+  (:oci-bind-by-name 1))
+
+(defcfun (#+ocilib32 "_OCI_SetBindMode@8"
+                     #-ocilib32 "OCI_SetBindMode" oci-set-bind-mode)
+    oci-bind
+  (statement statement)
+  (mode bind-mode))
+
+
+(defcenum (bind-direction :uint)
+  (:in  1)
+  (:out 2)
+  (:in-out 3))
+
+(defcfun (#+ocilib32 "_OCI_BindGetDirection@4"
+                     #-ocilib32 "OCI_BindGetDirection" oci-bind-get-direction)
+    bind-direction
+  (binding oci-bind))
+
+(defcfun (#+ocilib32 "_OCI_BindSetDirection@8"
+                     #-ocilib32 "OCI_BindSetDirection" oci-bind-set-direction)
+    bool
+  (binding oci-bind)
+  (direction bind-direction))
+
+(defcfun (#+ocilib32 "_OCI_BindSetNull@4"
+                     #-ocilib32 "OCI_BindSetNull" oci-bind-set-null)
+    bool
+  (binding oci-bind))
+
+(defcfun (#+ocilib32 "_OCI_BindIsNull@4"
+                     #-ocilib32 "OCI_BindIsNull" oci-bind-is-null)
+    bool
+  (binding oci-bind))
+
 (defctype oci-error :pointer)
 
 (defcfun (#+ocilib32 "_OCI_GetLastError@0"
@@ -265,3 +317,9 @@
                      #-ocilib32 "OCI_ErrorGetString" oci-error-get-string)
     win32:wide-string
   (error oci-error))
+
+(defcfun (#+ocilib32 "_OCI_ErrorGetStatement@4"
+                     #-ocilib32 "OCI_ErrorGetStatement" oci-error-get-statement)
+    statement
+  (error oci-error))
+
