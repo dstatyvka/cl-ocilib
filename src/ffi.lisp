@@ -12,7 +12,7 @@
                               (symbol-package name)) )
            (c-name #-(and win32 x86)
                    (format nil "OCI_~{~:(~a~)~}" parts)
-                   
+
                    #+(and win32 x86)
                    (format nil "_OCI_~{~:(~a~)~}@~a" parts
                            (loop :for (arg type) :in args
@@ -20,7 +20,7 @@
       `(defcfun (,c-name ,lisp-name) ,return-type
          ,@args))))
 
-(defctype oci-string 
+(defctype oci-string
     #-win32 :string
     #+win32(:string :encoding :ucs-2/le))
 

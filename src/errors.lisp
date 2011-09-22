@@ -12,8 +12,8 @@
     ((numberp last-result)
      (or (not (zerop last-result))
          (describe-last-error)))
-    
+
     ((null-pointer-p last-result)
      (describe-last-error))
-    
+
     (t last-result)))

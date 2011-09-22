@@ -6,8 +6,8 @@
 
 (defparameter *result-set* nil)
 
-(defmacro with-result-set ((&optional 
-                            (var '*result-set*) 
+(defmacro with-result-set ((&optional
+                            (var '*result-set*)
                             (statement '*statement*))
                            (&rest fields)
                            &body body)

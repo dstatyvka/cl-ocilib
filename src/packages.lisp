@@ -5,7 +5,7 @@
   (:export #:with-connection
            #:with-statement
            #:with-result-set
-           
+
            #:execute-statement
 
            #:fetch-next
