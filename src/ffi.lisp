@@ -21,11 +21,8 @@
          ,@args))))
 
 (defctype oci-string 
-    (:string :encoding :ucs-2/le))
-
-;; (defctype oci-string
-;;     #-win32 :string
-;;     #+win32 win32:wide-string)
+    #-win32 :string
+    #+win32(:string :encoding :ucs-2/le))
 
 (defctype bool :int)
 
