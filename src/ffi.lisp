@@ -1,5 +1,25 @@
 (in-package :ocilib)
 
+(defmacro def-oci-fun (name return-type &body args)
+  (flet ((split-by-dash (string)
+           (loop
+              :for start = 0 :then (1+ end)
+              :for end = (position #\- string :start start)
+              :collect (subseq string start end)
+              :while end)))
+    (let* ((parts (split-by-dash (symbol-name name)))
+           (lisp-name (intern (format nil "OCI-~{~:@(~a~^-~)~}" parts)
+                              (symbol-package name)) )
+           (c-name #-(and win32 x86)
+                   (format nil "OCI_~{~:(~a~)~}" parts)
+                   
+                   #+(and win32 x86)
+                   (format nil "_OCI_~{~:(~a~)~}@~a" parts
+                           (loop :for (arg type) :in args
+                              :sum (cffi:foreign-type-size type)))))
+      `(defcfun (,c-name ,lisp-name) ,return-type
+         ,@args))))
+
 (defctype bool :int)
 
 (defcenum (env :uint)
@@ -8,20 +28,14 @@
   (:oci-env-context  2)
   (:oci-env-events   4))
 
-(defcfun (#+ocilib32 "_OCI_Initialize@12"
-                     #-ocilib32 "OCI_Initialize" oci-initialize)
-    bool
+(def-oci-fun initialize bool
   (error-handler :pointer)
   (lib-path win32:wide-string)
   (mode env))
 
-(defcfun (#+ocilib32 "_OCI_Cleanup@0"
-                     #-ocilib32 "OCI_Cleanup" oci-cleanup)
-    bool)
+(def-oci-fun cleanup bool)
 
-(defcfun (#+ocilib32 "_OCI_EnableWarnings@4"
-                     #-ocilib32 "OCI_EnableWarnings" oci-enable-warnings)
-    :void
+(def-oci-fun enable-warnings :void
   (enable bool))
 
 (defctype connection :pointer)
@@ -33,105 +47,71 @@
   (:oci-session-sysoper     4)
   (:oci-session-prelim-auth 8))
 
-(defcfun (#+ocilib32 "_OCI_ConnectionCreate@16"
-                     #-ocilib32 "OCI_ConnectionCreate" oci-connection-create)
-    connection
+(def-oci-fun connection-create connection
   (db win32:wide-string)
   (user win32:wide-string)
   (pwd win32:wide-string)
   (mode mode))
 
-(defcfun (#+ocilib32 "_OCI_ConnectionFree@4"
-                     #-ocilib32 "OCI_ConnectionFree" oci-connection-free)
-    bool
+(def-oci-fun connection-free bool
   (connection connection))
 
 (defctype statement :pointer)
 
-(defcfun (#+ocilib32 "_OCI_StatementCreate@4"
-                     #-ocilib32 "OCI_StatementCreate" oci-statement-create)
-    statement
+(def-oci-fun statement-create statement
   (connection connection))
 
-(defcfun (#+ocilib32 "_OCI_StatementFree@4"
-                     #-ocilib32 "OCI_StatementFree" oci-statement-free)
-    bool
+(def-oci-fun statement-free bool
   (statement statement))
 
-(defcfun (#+ocilib32 "_OCI_Execute@4"
-                     #-ocilib32 "OCI_Execute" oci-execute)
-    bool
+(def-oci-fun execute bool
   (statement statement))
 
-(defcfun (#+ocilib32 "_OCI_ExecuteStmt@8"
-                     #-ocilib32 "OCI_ExecuteStmt" oci-execute-stmt)
-    bool
+(def-oci-fun execute-stmt bool
   (statement statement)
   (sql win32:wide-string))
 
-(defcfun (#+ocilib32 "_OCI_Prepare@8"
-                     #-ocilib32 "OCI_Prepare" oci-prepare)
-    bool
+(def-oci-fun prepare bool
   (statement statement)
   (sql win32:wide-string))
 
-(defcfun (#+ocilib32 "_OCI_Parse@8"
-                     #-ocilib32 "OCI_Parse" oci-parse)
-    bool
+(def-oci-fun parse bool
   (statement statement)
   (sql win32:wide-string))
 
-(defcfun (#+ocilib32 "_OCI_GetAffectedRows@4"
-                     #-ocilib32 "OCI_GetAffectedRows" oci-get-affected-rows)
-    bool
+(def-oci-fun get-affected-rows bool
   (statement statement))
 
 (defctype result-set :pointer)
 
-(defcfun (#+ocilib32 "_OCI_GetResultset@4"
-                     #-ocilib32 "OCI_GetResultset" oci-get-resultset)
-    result-set
+(def-oci-fun get-resultset result-set
   (statement statement))
 
-(defcfun (#+ocilib32 "_OCI_GetRowCount@4"
-                     #-ocilib32 "OCI_GetRowCount" oci-get-row-count)
-    :uint
+(def-oci-fun get-row-count :uint
   (result-set result-set))
 
-(defcfun (#+ocilib32 "_OCI_FetchFirst@4"
-                     #-ocilib32 "OCI_FetchFirst" oci-fetch-first)
-    bool
+(def-oci-fun fetch-first bool
   (result-set result-set))
 
-(defcfun (#+ocilib32 "_OCI_FetchLast@4"
-                     #-ocilib32 "OCI_FetchLast" oci-fetch-last)
-    bool
+(def-oci-fun fetch-last bool
   (result-set result-set))
 
-(defcfun (#+ocilib32 "_OCI_FetchNext@4"
-                     #-ocilib32 "OCI_FetchNext" oci-fetch-next)
-    bool
+(def-oci-fun fetch-next bool
   (result-set result-set))
 
-(defcfun (#+ocilib32 "_OCI_FetchPrev@4"
-                     #-ocilib32 "OCI_FetchPrev" oci-fetch-prev)
-    bool
+(def-oci-fun fetch-prev bool
   (result-set result-set))
 
 (defcenum (seek-direction :uint)
   (:absolute #x20 )
   (:relative #x40))
 
-(defcfun (#+ocilib32 "_OCI_FetchSeek@12"
-                     #-ocilib32 "OCI_FetchSeek" oci-fetch-seek)
-    bool
+(def-oci-fun fetch-seek bool
   (statement statement)
   (mode seek-direction)
   (offset :int))
 
-(defcfun (#+ocilib32 "_OCI_GetColumnIndex@8"
-                     #-ocilib32 "OCI_GetColumnIndex" oci-get-column-index)
-    :uint
+(def-oci-fun get-column-index :uint
   (result-set result-set)
   (name win32:wide-string))
 
@@ -152,103 +132,71 @@
 
 (defctype column :pointer)
 
-(defcfun (#+ocilib32 "_OCI_GetColumn@8"
-                     #-ocilib32 "OCI_GetColumn" oci-get-column-by-index)
-    column
+(def-oci-fun get-column column
   (result-set result-set)
   (index :uint))
 
-(defcfun (#+ocilib32 "_OCI_GetColumn2@8"
-                     #-ocilib32 "OCI_GetColumn2" oci-get-column-by-name)
-    column
+(def-oci-fun get-column2 column
   (result-set result-set)
   (name win32:wide-string))
 
-(defcfun (#+ocilib32 "_OCI_ColumnGetType@4"
-                     #-ocilib32 "OCI_ColumnGetType" oci-get-column-type)
-    ora-type
+(def-oci-fun column-get-type ora-type
   (column column))
 
-(defcfun (#+ocilib32 "_OCI_GetInt@8"
-                     #-ocilib32 "OCI_GetInt" oci-get-int)
-    :int
+(def-oci-fun get-int :int
   (result-set result-set)
   (index :uint))
 
-(defcfun (#+ocilib32 "_OCI_GetString@8"
-                     #-ocilib32 "OCI_GetString" oci-get-string)
-    win32:wide-string
+(def-oci-fun get-string win32:wide-string
   (result-set result-set)
   (index :uint))
 
-(defcfun (#+ocilib32 "_OCI_Commit@4"
-                     #-ocilib32 "OCI_Commit" oci-commit)
-    bool
+(def-oci-fun commit bool
   (connection connection))
 
-(defcfun (#+ocilib32 "_OCI_Rollback@4"
-                     #-ocilib32 "OCI_Rollback" oci-rollback)
-    bool
+(def-oci-fun rollback bool
   (connection connection))
 
-(defcfun (#+ocilib32 "_OCI_BindInt@12"
-                     #-ocilib32 "OCI_BindInt" oci-bind-int)
-    bool
+(def-oci-fun bind-int bool
   (statement statement)
   (name win32:wide-string)
   (data :pointer))
 
-(defcfun (#+ocilib32 "_OCI_BindArrayOfInts@16"
-                     #-ocilib32 "OCI_BindArrayOfInts" oci-bind-array-of-ints)
-    bool
+(def-oci-fun bind-array-of-ints bool
   (statement statement)
   (name win32:wide-string)
   (data :pointer)
   (count :uint))
 
-(defcfun (#+ocilib32 "_OCI_BindUnsignedInt@12"
-                     #-ocilib32 "OCI_BindUnsignedInt" oci-bind-unsigned-int)
-    bool
+(def-oci-fun bind-unsigned-int bool
   (statement statement)
   (name win32:wide-string)
   (data :pointer))
 
-(defcfun (#+ocilib32 "_OCI_BindArrayOfUnsignedInts@16"
-                     #-ocilib32 "OCI_BindArrayOfUnsignedInts" 
-                     oci-bind-array-of-unsigned-ints)
-    bool
+(def-oci-fun bind-array-of-unsigned-ints bool
   (statement statement)
   (name win32:wide-string)
   (data :pointer)
   (count :uint))
 
-(defcfun (#+ocilib32 "_OCI_BindBigInt@12"
-                     #-ocilib32 "OCI_BindBigInt" oci-bind-big-int)
-    bool
+(def-oci-fun bind-big-int bool
   (statement statement)
   (name win32:wide-string)
   (data :pointer))
 
-(defcfun (#+ocilib32 "_OCI_BindArrayOfBigInts@16"
-                     #-ocilib32 "OCI_BindArrayOfBigInts" 
-                     oci-bind-array-of-big-ints)
-    bool
+(def-oci-fun bind-array-of-big-ints bool
   (statement statement)
   (name win32:wide-string)
   (data :pointer)
   (count :uint))
 
-(defcfun (#+ocilib32 "_OCI_BindString@16"
-                     #-ocilib32 "OCI_BindString" oci-bind-string)
-    bool
+(def-oci-fun bind-string bool
   (statement statement)
   (name win32:wide-string)
   (data :pointer)
   (len :uint))
 
-(defcfun (#+ocilib32 "_OCI_BindArrayOfStrings@20"
-                     #-ocilib32 "OCI_BindArrayOfStrings" oci-bind-array-of-strings)
-    bool
+(def-oci-fun bind-array-of-strings bool
   (statement statement)
   (name win32:wide-string)
   (data :pointer)
@@ -257,15 +205,11 @@
 
 (defctype oci-bind :pointer)
 
-(defcfun (#+ocilib32 "_OCI_GetBind@8"
-                     #-ocilib32 "OCI_GetBind" oci-get-bind)
-    oci-bind
+(def-oci-fun get-bind oci-bind
   (statement statement)
   (index :uint))
 
-(defcfun (#+ocilib32 "_OCI_GetBind2@8"
-                     #-ocilib32 "OCI_GetBind2" oci-get-bind2)
-    oci-bind
+(def-oci-fun get-bind2 oci-bind
   (statement statement)
   (name win32:wide-string))
 
@@ -274,9 +218,7 @@
   (:oci-bind-by-pos 0)
   (:oci-bind-by-name 1))
 
-(defcfun (#+ocilib32 "_OCI_SetBindMode@8"
-                     #-ocilib32 "OCI_SetBindMode" oci-set-bind-mode)
-    oci-bind
+(def-oci-fun set-bind-mode oci-bind
   (statement statement)
   (mode bind-mode))
 
@@ -286,40 +228,26 @@
   (:out 2)
   (:in-out 3))
 
-(defcfun (#+ocilib32 "_OCI_BindGetDirection@4"
-                     #-ocilib32 "OCI_BindGetDirection" oci-bind-get-direction)
-    bind-direction
+(def-oci-fun bind-get-direction bind-direction
   (binding oci-bind))
 
-(defcfun (#+ocilib32 "_OCI_BindSetDirection@8"
-                     #-ocilib32 "OCI_BindSetDirection" oci-bind-set-direction)
-    bool
+(def-oci-fun bind-set-direction bool
   (binding oci-bind)
   (direction bind-direction))
 
-(defcfun (#+ocilib32 "_OCI_BindSetNull@4"
-                     #-ocilib32 "OCI_BindSetNull" oci-bind-set-null)
-    bool
+(def-oci-fun bind-set-null bool
   (binding oci-bind))
 
-(defcfun (#+ocilib32 "_OCI_BindIsNull@4"
-                     #-ocilib32 "OCI_BindIsNull" oci-bind-is-null)
-    bool
+(def-oci-fun bind-is-null bool
   (binding oci-bind))
 
 (defctype oci-error :pointer)
 
-(defcfun (#+ocilib32 "_OCI_GetLastError@0"
-                     #-ocilib32 "OCI_GetLastError" oci-get-last-error)
-    oci-error)
+(def-oci-fun get-last-error oci-error)
 
-(defcfun (#+ocilib32 "_OCI_ErrorGetString@4"
-                     #-ocilib32 "OCI_ErrorGetString" oci-error-get-string)
-    win32:wide-string
+(def-oci-fun error-get-string win32:wide-string
   (error oci-error))
 
-(defcfun (#+ocilib32 "_OCI_ErrorGetStatement@4"
-                     #-ocilib32 "OCI_ErrorGetStatement" oci-error-get-statement)
-    statement
+(def-oci-fun error-get-statement statement
   (error oci-error))
 

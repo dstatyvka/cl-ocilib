@@ -48,11 +48,11 @@
 
 (defun get-column (name-or-index &optional (result-set *result-set*))
   (etypecase name-or-index
-    (string (oci-get-column-by-name result-set  name-or-index))
-    (number (oci-get-column-by-index result-set name-or-index))))
+    (string (oci-get-column2 result-set  name-or-index))
+    (number (oci-get-column result-set name-or-index))))
 
 (defun get-accessor (index &optional (result-set *result-set*))
-  (case (oci-get-column-type (get-column index result-set))
+  (case (oci-column-get-type (get-column index result-set))
     (:string #'get-string)
     (:numeric #'get-int)
     (t #'get-string)))
