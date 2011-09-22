@@ -65,7 +65,7 @@
        :into foreign-objects
        :and :append 
        `((setf ,bind-var 
-               (win32:wide-string-to-c 
+               (convert-to-foreign
                 ,(cond
                   (length (alexandria:with-gensyms (s)
                             `(let ((,s (make-string 
@@ -75,7 +75,8 @@
                                  (when arg-in
                                    `(setf (subseq ,s 0 (length ,arg-in))
                                           ,arg-in))))))
-                  (arg-in `(or ,arg-in "")))))
+                  (arg-in `(or ,arg-in "")))
+                'oci-string))
          (,(descr arg-type) ,statement ,bind-name ,bind-var
            ,(or length 0))
          ,@(when arg-in
@@ -95,7 +96,7 @@
                        (when (zerop 
                                 (oci-bind-is-null (oci-get-bind ,statement ,i)))
                          ,(if stringp
-                              `(win32:wide-string-to-lisp ,bind-var)
+                              `(convert-from-foreign ,bind-var 'oci-string)
                               `(mem-ref ,bind-var ,arg-type))))
        :into get-out-values
        :collect `(oci-bind-set-direction (oci-get-bind ,statement ,i) 

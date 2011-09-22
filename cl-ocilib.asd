@@ -8,7 +8,7 @@
 (defsystem #:cl-ocilib
   :author "Dmitry Statyvka <dmitry@statyvka.org.ua>"
   :version "0.0.1"
-  :depends-on (:cffi :cl-win32 :alexandria)
+  :depends-on (:cffi :alexandria)
   :components ((:module "src" :serial t
                         :components ((:file "packages")
                                      (:file "libraries")

@@ -20,6 +20,13 @@
       `(defcfun (,c-name ,lisp-name) ,return-type
          ,@args))))
 
+(defctype oci-string 
+    (:string :encoding :ucs-2/le))
+
+;; (defctype oci-string
+;;     #-win32 :string
+;;     #+win32 win32:wide-string)
+
 (defctype bool :int)
 
 (defcenum (env :uint)
@@ -30,7 +37,7 @@
 
 (def-oci-fun initialize bool
   (error-handler :pointer)
-  (lib-path win32:wide-string)
+  (lib-path oci-string)
   (mode env))
 
 (def-oci-fun cleanup bool)
@@ -48,9 +55,9 @@
   (:oci-session-prelim-auth 8))
 
 (def-oci-fun connection-create connection
-  (db win32:wide-string)
-  (user win32:wide-string)
-  (pwd win32:wide-string)
+  (db oci-string)
+  (user oci-string)
+  (pwd oci-string)
   (mode mode))
 
 (def-oci-fun connection-free bool
@@ -69,15 +76,15 @@
 
 (def-oci-fun execute-stmt bool
   (statement statement)
-  (sql win32:wide-string))
+  (sql oci-string))
 
 (def-oci-fun prepare bool
   (statement statement)
-  (sql win32:wide-string))
+  (sql oci-string))
 
 (def-oci-fun parse bool
   (statement statement)
-  (sql win32:wide-string))
+  (sql oci-string))
 
 (def-oci-fun get-affected-rows bool
   (statement statement))
@@ -113,7 +120,7 @@
 
 (def-oci-fun get-column-index :uint
   (result-set result-set)
-  (name win32:wide-string))
+  (name oci-string))
 
 (defcenum (ora-type :uint)
   (:numeric    1)
@@ -138,7 +145,7 @@
 
 (def-oci-fun get-column2 column
   (result-set result-set)
-  (name win32:wide-string))
+  (name oci-string))
 
 (def-oci-fun column-get-type ora-type
   (column column))
@@ -147,7 +154,7 @@
   (result-set result-set)
   (index :uint))
 
-(def-oci-fun get-string win32:wide-string
+(def-oci-fun get-string oci-string
   (result-set result-set)
   (index :uint))
 
@@ -159,46 +166,46 @@
 
 (def-oci-fun bind-int bool
   (statement statement)
-  (name win32:wide-string)
+  (name oci-string)
   (data :pointer))
 
 (def-oci-fun bind-array-of-ints bool
   (statement statement)
-  (name win32:wide-string)
+  (name oci-string)
   (data :pointer)
   (count :uint))
 
 (def-oci-fun bind-unsigned-int bool
   (statement statement)
-  (name win32:wide-string)
+  (name oci-string)
   (data :pointer))
 
 (def-oci-fun bind-array-of-unsigned-ints bool
   (statement statement)
-  (name win32:wide-string)
+  (name oci-string)
   (data :pointer)
   (count :uint))
 
 (def-oci-fun bind-big-int bool
   (statement statement)
-  (name win32:wide-string)
+  (name oci-string)
   (data :pointer))
 
 (def-oci-fun bind-array-of-big-ints bool
   (statement statement)
-  (name win32:wide-string)
+  (name oci-string)
   (data :pointer)
   (count :uint))
 
 (def-oci-fun bind-string bool
   (statement statement)
-  (name win32:wide-string)
+  (name oci-string)
   (data :pointer)
   (len :uint))
 
 (def-oci-fun bind-array-of-strings bool
   (statement statement)
-  (name win32:wide-string)
+  (name oci-string)
   (data :pointer)
   (len :uint)
   (count :uint))
@@ -211,7 +218,7 @@
 
 (def-oci-fun get-bind2 oci-bind
   (statement statement)
-  (name win32:wide-string))
+  (name oci-string))
 
 
 (defcenum (bind-mode :uint)
@@ -245,7 +252,7 @@
 
 (def-oci-fun get-last-error oci-error)
 
-(def-oci-fun error-get-string win32:wide-string
+(def-oci-fun error-get-string oci-string
   (error oci-error))
 
 (def-oci-fun error-get-statement statement
